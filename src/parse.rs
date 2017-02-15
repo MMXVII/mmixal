@@ -39,14 +39,10 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
     regex_str.push_str(",[[:space:]]");
     regex_str.push_str("(?P<opz>[[:alpha:]]+|[0-9]+)");          // Z operand
 
-
-
     let regex = Regex::new(&regex_str).unwrap();
-    let captures = match regex.captures(&line) {
-        Some(caps) => caps,
-        None => return Err(ParseErrorKind::SyntaxError),
-    };
+    let captures = regex.captures(&line).ok_or(ParseErrorKind::SyntaxError)?;
 
+    // construct optional label "label"-capture
     let label = if let Some(label_cap) = captures.name("label") {
         let mut label_str = String::from(label_cap.as_str());
         assert!(label_str.pop().unwrap().is_whitespace());
@@ -56,9 +52,10 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
         None
     };
 
-    let instr = captures.name("instr").unwrap().as_str();
 
-
+    // Construct command from "instr"-capture
+    let command_str = captures.name("instr").unwrap().as_str();
+    let command = Command::from_str(command_str).ok_or(ParseErrorKind::UnknownSymbolic)?;
 
     fn construct_operand(text: &str) -> Result<Operand, ParseErrorKind> {
         if text.chars().nth(0).unwrap().is_digit(10) {
@@ -68,11 +65,9 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
         }
     }
 
-
-
     Ok(Instruction {
         label: label,
-        command: Command::Addu,
+        command: command,
         x_operand: construct_operand(captures.name("opx").unwrap().as_str())?,
         y_operand: construct_operand(captures.name("opy").unwrap().as_str())?,
         z_operand: construct_operand(captures.name("opz").unwrap().as_str())?,
