@@ -15,7 +15,7 @@ pub enum ParseErrorKind {
     SyntaxError,
     UnknownSymbolic,
     LabelDoubleUse,
-    UndefinedSymbol,
+    UndefinedLabel,
 }
 
 impl ParseErrorKind {
@@ -75,12 +75,20 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
         }
     }
 
+    let op_str = | capture_str | {
+        captures.name(capture_str).unwrap().as_str()
+    };
+
+    let operands = vec![
+        construct_operand(op_str("opx"))?,
+        construct_operand(op_str("opy"))?,
+        construct_operand(op_str("opz"))?,
+    ];
+
     Ok(Instruction {
         label: label,
         command: command,
-        x_operand: construct_operand(captures.name("opx").unwrap().as_str())?,
-        y_operand: construct_operand(captures.name("opy").unwrap().as_str())?,
-        z_operand: construct_operand(captures.name("opz").unwrap().as_str())?,
+        operands: operands,
     })
 }
 

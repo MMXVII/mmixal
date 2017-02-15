@@ -52,37 +52,34 @@ pub fn first_pass(lines: &[&str]) -> Result<IntermediateResult, ParseError> {
 
 
 fn second_pass(intermediate: &IntermediateResult) -> Result<Vec<u8>, ParseError> {
+
+
     let mut binary = Vec::new();
     for &(ref line, line_no) in intermediate.parsed.iter() {
         match line {
             &ParsedLine::RegularInstruction(ref instr) => {
                 binary.push(instr.command.opcode());
 
-                unimplemented!()
-                //binary.push(actual_operand(&instr.x_operand, &intermediate.symbol_table, instr.command));
-                //binary.push(actual_operand(&instr.y_operand, &intermediate.symbol_table, instr.command));
-                //binary.push(actual_operand(&instr.z_operand, &intermediate.symbol_table, instr.command));
+                for i in 0..3 {
+                    let effective_op: u8 = match instr.operands[i] {
+                        Operand::Value(val) => {
+                            val
+                        }
+                        Operand::Label(ref label_str) => {
+                            let key = &label_str.clone();
+
+                            // let &address = intermediate.symbol_table.get(key)
+                            //    .ok_or(ParseErrorKind::UndefinedLabel)?;
+
+                            // TODO: special treatment for branch / jump commands
+                            unimplemented!()
+                        }
+                    };
+                    binary.push(effective_op);
+                }
             }
             _ => unimplemented!(),
         }
     }
     unimplemented!()
-}
-
-fn actual_operand(operand: &Operand, symbol_table: &HashMap<String, u64>, comm: &Command)
-    -> Result<u8, ParseErrorKind>
-{
-
-    match *operand {
-        Operand::Value(val) => {
-            Ok(val)
-        }
-        Operand::Label(ref label_str) => {
-            let key = &label_str.clone();
-            let &address = symbol_table.get(key).ok_or(ParseErrorKind::UndefinedSymbol)?;
-
-            // TODO: special treatment for branch / jump commands
-            Ok(address as u8)
-        }
-    }
 }

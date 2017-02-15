@@ -19,7 +19,5 @@ pub struct Directive();
 pub struct Instruction {
     pub label: Option<String>,
     pub command: Command,
-    pub x_operand: Operand,
-    pub y_operand: Operand,
-    pub z_operand: Operand,
+    pub operands: Vec<Operand>,
 }
