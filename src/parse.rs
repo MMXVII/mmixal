@@ -1,3 +1,4 @@
+use is::Command;
 use syntax::{Line, Directive, Instruction, Operand};
 
 use regex::Regex;
@@ -25,6 +26,7 @@ pub fn parse(command: &str) -> Result<Option<Line>, ParseErrorKind> {
 }
 
 pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
+    // TODO use lazy_static! in order to compile the regex only once
     let mut regex_str = String::new();
     regex_str.push_str("^[[:space:]]*");
     regex_str.push_str("(?P<label>[[:alpha:]]+:[[:space:]])?");  // Optional label
@@ -70,7 +72,7 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
 
     Ok(Instruction {
         label: label,
-        opcode: 0,
+        command: Command::Addu,
         x_operand: construct_operand(captures.name("opx").unwrap().as_str())?,
         y_operand: construct_operand(captures.name("opy").unwrap().as_str())?,
         z_operand: construct_operand(captures.name("opz").unwrap().as_str())?,
