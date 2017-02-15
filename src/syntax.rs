@@ -1,7 +1,7 @@
 use is::Command;
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum Line {
+pub enum ParsedLine {
     Data(Directive),
     Instruction(Instruction),
 }

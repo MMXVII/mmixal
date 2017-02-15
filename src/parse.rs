@@ -1,12 +1,12 @@
 use is::Command;
-use syntax::{Line, Directive, Instruction, Operand};
+use syntax::{ParsedLine, Directive, Instruction, Operand};
 
 use regex::Regex;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct ParseError {
-    kind: ParseErrorKind,
-    line: u32,
+    pub kind: ParseErrorKind,
+    pub line: u32,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -18,11 +18,11 @@ pub enum ParseErrorKind {
 
 
 
-pub fn parse(command: &str) -> Result<Option<Line>, ParseErrorKind> {
+pub fn parse(command: &str) -> Result<Option<ParsedLine>, ParseErrorKind> {
     // TODO: return Ok(None) for empty lines or comment lines
     // TODO: check whether line contains normal instruction or directive and call
     // corresponding function
-    parse_instruction(command).map(|instr| Some(Line::Instruction(instr)))
+    parse_instruction(command).map(|instr| Some(ParsedLine::Instruction(instr)))
 }
 
 pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
