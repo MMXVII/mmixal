@@ -6,14 +6,15 @@ use regex::Regex;
 #[derive(Debug, PartialEq, Eq)]
 pub struct ParseError {
     pub kind: ParseErrorKind,
-    pub line: u32,
+    pub line: u64,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ParseErrorKind {
-    u8ParseError,
+    NumberTooBig,
     SyntaxError,
     UnknownSymbolic,
+    LabelDoubleUse,
 }
 
 
@@ -22,7 +23,7 @@ pub fn parse(command: &str) -> Result<Option<ParsedLine>, ParseErrorKind> {
     // TODO: return Ok(None) for empty lines or comment lines
     // TODO: check whether line contains normal instruction or directive and call
     // corresponding function
-    parse_instruction(command).map(|instr| Some(ParsedLine::Instruction(instr)))
+    parse_instruction(command).map(|instr| Some(ParsedLine::RegularInstruction(instr)))
 }
 
 pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
@@ -42,7 +43,7 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
     let regex = Regex::new(&regex_str).unwrap();
     let captures = regex.captures(&line).ok_or(ParseErrorKind::SyntaxError)?;
 
-    // construct optional label "label"-capture
+    // Construct optional label "label"-capture
     let label = if let Some(label_cap) = captures.name("label") {
         let mut label_str = String::from(label_cap.as_str());
         assert!(label_str.pop().unwrap().is_whitespace());
@@ -59,7 +60,7 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
 
     fn construct_operand(text: &str) -> Result<Operand, ParseErrorKind> {
         if text.chars().nth(0).unwrap().is_digit(10) {
-            text.parse::<u8>().map(|n| Operand::Value(n)).map_err(|_| ParseErrorKind::u8ParseError)
+            text.parse::<u8>().map(|n| Operand::Value(n)).map_err(|_| ParseErrorKind::NumberTooBig)
         } else {
             Ok(Operand::Label(String::from(text)))
         }
@@ -74,6 +75,6 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
     })
 }
 
-fn parse_directive(line: &str) -> Result<Directive, ParseErrorKind> {
+fn parse_directive(_line: &str) -> Result<Directive, ParseErrorKind> {
     unimplemented!()
 }

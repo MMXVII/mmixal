@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Command {
    Addu,
    Addui,
@@ -7,6 +7,8 @@ pub enum Command {
 }
 
 impl Command {
+
+    // TODO: replace this with implementation of FromStr interface
     pub fn from_str(s: &str) -> Option<Self> {
         use self::Command::*;
         match s {

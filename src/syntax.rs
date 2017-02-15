@@ -1,21 +1,21 @@
 use is::Command;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ParsedLine {
     Data(Directive),
-    Instruction(Instruction),
+    RegularInstruction(Instruction),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Operand {
     Label(String),
     Value(u8),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Directive();
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Instruction {
     pub label: Option<String>,
     pub command: Command,
