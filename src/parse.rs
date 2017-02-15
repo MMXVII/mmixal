@@ -3,20 +3,29 @@ use syntax::{ParsedLine, Directive, Instruction, Operand};
 
 use regex::Regex;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct ParseError {
     pub kind: ParseErrorKind,
     pub line: u64,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ParseErrorKind {
     NumberTooBig,
     SyntaxError,
     UnknownSymbolic,
     LabelDoubleUse,
+    UndefinedSymbol,
 }
 
+impl ParseErrorKind {
+    pub fn to_parse_err(self, line: u64) -> ParseError {
+        ParseError {
+            kind: self,
+            line: line,
+        }
+    }
+}
 
 
 pub fn parse(command: &str) -> Result<Option<ParsedLine>, ParseErrorKind> {
