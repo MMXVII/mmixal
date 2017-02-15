@@ -53,7 +53,6 @@ pub fn first_pass(lines: &[&str]) -> Result<IntermediateResult, ParseError> {
 
 fn second_pass(intermediate: &IntermediateResult) -> Result<Vec<u8>, ParseError> {
 
-
     let mut binary = Vec::new();
     for &(ref line, line_no) in intermediate.parsed.iter() {
         match line {
@@ -68,11 +67,17 @@ fn second_pass(intermediate: &IntermediateResult) -> Result<Vec<u8>, ParseError>
                         Operand::Label(ref label_str) => {
                             let key = &label_str.clone();
 
-                            // let &address = intermediate.symbol_table.get(key)
-                            //    .ok_or(ParseErrorKind::UndefinedLabel)?;
+                            let address = intermediate.symbol_table.get(key);
+
+                            if address.is_none() {
+                                return Err(ParseError {
+                                    kind: ParseErrorKind::UndefinedLabel,
+                                    line: line_no,
+                                });
+                            }
 
                             // TODO: special treatment for branch / jump commands
-                            unimplemented!()
+                            *address.unwrap() as u8
                         }
                     };
                     binary.push(effective_op);
