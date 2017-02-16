@@ -4,6 +4,12 @@ pub enum Command {
    Addui,
    Cmpu,
    Cmpui,
+   Bz,
+   Bzb,
+   Bnz,
+   Bnzb,
+   Divu,
+   Trap,
 }
 
 impl Command {
@@ -16,6 +22,12 @@ impl Command {
             "ADDUI" => Some(Addui),
             "CMPU" => Some(Cmpu),
             "CMPUI" => Some(Cmpui),
+            "DIVU" => Some(Divu),
+            "TRAP" => Some(Trap),
+            "BZ" => Some(Bz),
+            "BNZ" => Some(Bnz),
+            "BZB" => Some(Bzb),
+            "BNZB" => Some(Bnzb),
             _ => None,
         }
     }
@@ -27,6 +39,18 @@ impl Command {
             Addui => 0x23,
             Cmpu => 0x32,
             Cmpui => 0x33,
+            Trap => 0x00,
+            Bz => 0x42,
+            Bnz => 0x4a,
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn is_relative_branch(&self) -> bool {
+        use self::Command::*;
+        match *self {
+            Bnz | Bnzb | Bz | Bzb => true,
+            _ => false,
         }
     }
 }

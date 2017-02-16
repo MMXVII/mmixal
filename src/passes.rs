@@ -84,7 +84,7 @@ pub fn second_pass(intermediate: &IntermediateResult) -> Result<Vec<u8>, ParseEr
             // Translate regular instructions to binary
             &ParsedLine::RegularInstruction(ref instr) => {
 
-                let result = translate_instruction(instr, &(intermediate.symbol_table));
+                let result = translate_instruction(instr, &(intermediate.symbol_table), binary.len() as u64);
 
                 binary.extend(&result.map_err(|kind| kind.to_parse_err(line_no))?);
             }
@@ -97,7 +97,7 @@ pub fn second_pass(intermediate: &IntermediateResult) -> Result<Vec<u8>, ParseEr
     Ok(binary)
 }
 
-fn translate_instruction(instr: &Instruction, symbols: &HashMap<String, u64>)
+fn translate_instruction(instr: &Instruction, symbols: &HashMap<String, u64>, pc: u64)
     -> Result<Vec<u8>, ParseErrorKind>
 {
 
@@ -105,6 +105,43 @@ fn translate_instruction(instr: &Instruction, symbols: &HashMap<String, u64>)
 
     // Translate command to opcode
     binary.push(instr.command.opcode());
+
+    if instr.command.is_relative_branch() {
+        if let Operand::Label(ref label_str) = instr.operands[2] {
+            let key = &label_str.clone();
+            let absolute_address_opt = symbols.get(key);
+
+            if absolute_address_opt.is_none() {
+                return Err(ParseErrorKind::UndefinedLabel);
+            }
+
+            let absolute_address = absolute_address_opt.unwrap();
+            assert_eq!(absolute_address % 4, 0);
+
+            let difference = if command.is_forward_branch() {
+                (((absolute_address - pc) / 4) - 1) as u16
+            } else {
+                (((pc - absolute_address) / 4) + 1) as u16
+            };
+
+            let x_op = match instr.operands[0] {
+                Operand::Value(val) => val,
+                Operand::Label(_) => unimplemented!()
+            };
+
+            let y_op = (difference >> 8) as u8;
+            let z_op = (difference & 0xF) as u8;
+
+            binary.push(x_op);
+            binary.push(y_op);
+            binary.push(z_op);
+
+            return Ok(binary)
+
+        } else {
+            unimplemented!()
+        }
+    }
 
     // Translate operands
     for i in 0..3 {
