@@ -11,15 +11,16 @@ mod syntax;
 
 fn main() {
 
-    let filename = match cli::get_filename() {
+    let (in_file, out_file) = match cli::get_filenames() {
         Some(name) => name,
         None => {
-            println!("Please pass the name of the file you want to assemble as a parameter");
+            print!("Please pass the name of the file you want to assemble as the first parameter,");
+            println!("and the desired name of the output file as the second parameter to the program.");
             return;
         }
     };
 
-    let lines = match io::read_file(&filename) {
+    let lines = match io::read_file(&in_file) {
         Ok(lines) => lines,
         Err(err) => {
             println!("{:?}", err);
@@ -47,9 +48,7 @@ fn main() {
         }
     };
 
-    // TODO also retrieve this name from cli
-    let out_file = "test.mmo";
-    if io::write_file(out_file, &final_result).is_err() {
+    if io::write_file(&out_file, &final_result).is_err() {
         println!("Error when trying to write to file '{}'", out_file);
     }
 
