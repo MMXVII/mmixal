@@ -1,7 +1,28 @@
 use is::Command;
 use syntax::{ParsedLine, Directive, Instruction, Operand};
 
+use lazy_static;
 use regex::Regex;
+
+lazy_static! {
+    static ref REGEX: Regex = {
+
+        let mut regex_str = String::new();
+
+        regex_str.push_str("^[[:space:]]*");
+        regex_str.push_str("(?P<label>[[:alpha:]]+:[[:space:]])?");  // Optional label
+        regex_str.push_str("[[:space:]]*");
+        regex_str.push_str("(?P<instr>[A-Z]+)");                     // Symbolic instruction name
+        regex_str.push_str("[[:space:]]+");
+        regex_str.push_str("(?P<opx>[[:alpha:]]+|[0-9]+)");          // X operand
+        regex_str.push_str(",[[:space:]]");
+        regex_str.push_str("(?P<opy>[[:alpha:]]+|[0-9]+)");          // Y operand
+        regex_str.push_str(",[[:space:]]");
+        regex_str.push_str("(?P<opz>[[:alpha:]]+|[0-9]+)");          // Z operand
+
+        Regex::new(&regex_str).unwrap()
+    };
+}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct ParseError {
@@ -27,7 +48,6 @@ impl ParseErrorKind {
     }
 }
 
-
 pub fn parse(command: &str) -> Result<Option<ParsedLine>, ParseErrorKind> {
     // TODO: return Ok(None) for empty lines or comment lines
     // TODO: check whether line contains normal instruction or directive and call
@@ -36,21 +56,8 @@ pub fn parse(command: &str) -> Result<Option<ParsedLine>, ParseErrorKind> {
 }
 
 pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
-    // TODO use lazy_static! in order to compile the regex only once
-    let mut regex_str = String::new();
-    regex_str.push_str("^[[:space:]]*");
-    regex_str.push_str("(?P<label>[[:alpha:]]+:[[:space:]])?");  // Optional label
-    regex_str.push_str("[[:space:]]*");
-    regex_str.push_str("(?P<instr>[A-Z]+)");                     // Symbolic instruction name
-    regex_str.push_str("[[:space:]]+");
-    regex_str.push_str("(?P<opx>[[:alpha:]]+|[0-9]+)");          // X operand
-    regex_str.push_str(",[[:space:]]");
-    regex_str.push_str("(?P<opy>[[:alpha:]]+|[0-9]+)");          // Y operand
-    regex_str.push_str(",[[:space:]]");
-    regex_str.push_str("(?P<opz>[[:alpha:]]+|[0-9]+)");          // Z operand
 
-    let regex = Regex::new(&regex_str).unwrap();
-    let captures = regex.captures(&line).ok_or(ParseErrorKind::SyntaxError)?;
+    let captures = REGEX.captures(&line).ok_or(ParseErrorKind::SyntaxError)?;
 
     // Construct optional label "label"-capture
     let label = if let Some(label_cap) = captures.name("label") {
@@ -61,7 +68,6 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
     } else {
         None
     };
-
 
     // Construct command from "instr"-capture
     let command_str = captures.name("instr").unwrap().as_str();

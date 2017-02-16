@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate lazy_static;
 extern crate regex;
 
 mod cli;
@@ -8,9 +10,6 @@ mod passes;
 mod syntax;
 
 fn main() {
-
-
-    // let lines = vec!["Label: ADDU Label, 2, 3", "AnotherLabel: CMPU 1, 2, 3"];
 
     let filename = match cli::get_filename() {
         Some(name) => name,
@@ -27,6 +26,7 @@ fn main() {
             return;
         }
     };
+
 
     let intermediate = match passes::first_pass(&lines) {
         Ok(result) => result,

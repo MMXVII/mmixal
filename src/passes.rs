@@ -16,7 +16,7 @@ pub struct IntermediateResult {
 
 /// The first pass goes through each line, disregards empty or comment lines,
 /// trys to parse all remaining lines to `ParsedLine` and constructs the symbol table.
-pub fn first_pass(lines: &[&str]) -> Result<IntermediateResult, ParseError> {
+pub fn first_pass(lines: &[String]) -> Result<IntermediateResult, ParseError> {
 
     let mut pc = 0;
     let mut symbol_table = HashMap::new();
