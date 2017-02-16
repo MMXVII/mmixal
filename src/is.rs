@@ -10,6 +10,10 @@ pub enum Command {
    Bnzb,
    Divu,
    Trap,
+   Incl,
+   Setl,
+   Jmpb,
+   Get,
 }
 
 impl Command {
@@ -28,6 +32,10 @@ impl Command {
             "BNZ" => Some(Bnz),
             "BZB" => Some(Bzb),
             "BNZB" => Some(Bnzb),
+            "JMPB" => Some(Jmpb),
+            "SETL" => Some(Setl),
+            "INCL" => Some(Incl),
+            "GET" => Some(Get),
             _ => None,
         }
     }
@@ -42,7 +50,13 @@ impl Command {
             Trap => 0x00,
             Bz => 0x42,
             Bnz => 0x4a,
-            _ => unimplemented!(),
+            Bnzb => 0x4b,
+            Bzb => 0x43,
+            Divu => 0x1e,
+            Incl => 0xe7,
+            Setl => 0xe3,
+            Jmpb => 0xf1,
+            Get => 0xfe,
         }
     }
 
@@ -50,7 +64,7 @@ impl Command {
     pub fn is_relative_branch(&self) -> bool {
         use self::Command::*;
         match *self {
-            Bnz | Bnzb | Bz | Bzb => true,
+            Bnz | Bnzb | Bz | Bzb | Jmpb => true,
             _ => false,
         }
     }

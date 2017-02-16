@@ -78,6 +78,7 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
 
     // Construct command from "instr"-capture
     let command_str = captures.name("instr").unwrap().as_str();
+
     let command = Command::from_str(command_str).ok_or(ParseErrorKind::UnknownSymbolic)?;
 
     fn construct_operand(text: &str) -> Result<Operand, ParseErrorKind> {
