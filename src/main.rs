@@ -1,14 +1,32 @@
 extern crate regex;
 
-mod passes;
+mod cli;
+mod io;
 mod is;
 mod parse;
+mod passes;
 mod syntax;
 
 fn main() {
 
 
-    let lines = vec!["Label: ADDU Label, 2, 3", "AnotherLabel: CMPU 1, 2, 3"];
+    // let lines = vec!["Label: ADDU Label, 2, 3", "AnotherLabel: CMPU 1, 2, 3"];
+
+    let filename = match cli::get_filename() {
+        Some(name) => name,
+        None => {
+            println!("Please pass the name of the file you want to assemble as a parameter");
+            return;
+        }
+    };
+
+    let lines = match io::read_file(&filename) {
+        Ok(lines) => lines,
+        Err(err) => {
+            println!("{:?}", err);
+            return;
+        }
+    };
 
     let intermediate = match passes::first_pass(&lines) {
         Ok(result) => result,
