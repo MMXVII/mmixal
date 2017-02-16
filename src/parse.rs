@@ -5,6 +5,9 @@ use lazy_static;
 use regex::Regex;
 
 lazy_static! {
+    static ref REGEX_EMPTY: Regex = {
+        Regex::new("(^[[:space:]]*$)|(^[[:space:]]*;)").unwrap()
+    };
     static ref REGEX: Regex = {
 
         let mut regex_str = String::new();
@@ -49,7 +52,11 @@ impl ParseErrorKind {
 }
 
 pub fn parse(command: &str) -> Result<Option<ParsedLine>, ParseErrorKind> {
-    // TODO: return Ok(None) for empty lines or comment lines
+    // disregard empty and comment lines
+    if REGEX_EMPTY.is_match(command) {
+        return Ok(None);
+    }
+
     // TODO: check whether line contains normal instruction or directive and call
     // corresponding function
     parse_instruction(command).map(|instr| Some(ParsedLine::RegularInstruction(instr)))
