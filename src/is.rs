@@ -46,10 +46,20 @@ impl Command {
         }
     }
 
+    /// Bad last minute code
     pub fn is_relative_branch(&self) -> bool {
         use self::Command::*;
         match *self {
             Bnz | Bnzb | Bz | Bzb => true,
+            _ => false,
+        }
+    }
+
+    /// Bad last minute code
+    pub fn is_forwards_branch(&self) -> bool {
+        use self::Command::*;
+        match *self {
+            Bnz | Bz => true,
             _ => false,
         }
     }

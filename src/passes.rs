@@ -118,7 +118,7 @@ fn translate_instruction(instr: &Instruction, symbols: &HashMap<String, u64>, pc
             let absolute_address = absolute_address_opt.unwrap();
             assert_eq!(absolute_address % 4, 0);
 
-            let difference = if command.is_forward_branch() {
+            let difference = if instr.command.is_forwards_branch() {
                 (((absolute_address - pc) / 4) - 1) as u16
             } else {
                 (((pc - absolute_address) / 4) + 1) as u16
