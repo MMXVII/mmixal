@@ -3,8 +3,6 @@ use std::collections::HashMap;
 use syntax::{ParsedLine, Operand, Instruction};
 use parse;
 use parse::{ParseError, ParseErrorKind};
-use is::Command;
-
 
 /// Represents the information gathered by the first assembler pass.
 /// This information is needed in order to perform the second pass.
@@ -25,7 +23,8 @@ pub fn first_pass(lines: &[String]) -> Result<IntermediateResult, ParseError> {
 
     for (line_no, line) in lines.iter().enumerate() {
 
-        let parsed_line_opt = parse::parse(line).map_err(|kind| kind.to_parse_err(line_no as u64))?;
+        let parsed_line_opt = parse::parse(line)
+            .map_err(|kind| kind.to_parse_err(line_no as u64))?;
 
         // If the line was not empty or only a comment, process it
         if let Some(parsed_line) = parsed_line_opt {
@@ -84,7 +83,8 @@ pub fn second_pass(intermediate: &IntermediateResult) -> Result<Vec<u8>, ParseEr
             // Translate regular instructions to binary
             &ParsedLine::RegularInstruction(ref instr) => {
 
-                let result = translate_instruction(instr, &(intermediate.symbol_table), binary.len() as u64);
+                let result =
+                    translate_instruction(instr, &(intermediate.symbol_table), binary.len() as u64);
 
                 binary.extend(&result.map_err(|kind| kind.to_parse_err(line_no))?);
             }
@@ -97,6 +97,7 @@ pub fn second_pass(intermediate: &IntermediateResult) -> Result<Vec<u8>, ParseEr
     Ok(binary)
 }
 
+/// Bad last minute code
 fn translate_instruction(instr: &Instruction, symbols: &HashMap<String, u64>, pc: u64)
     -> Result<Vec<u8>, ParseErrorKind>
 {

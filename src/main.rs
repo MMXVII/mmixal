@@ -14,8 +14,10 @@ fn main() {
     let (in_file, out_file) = match cli::get_filenames() {
         Some(name) => name,
         None => {
-            print!("Please pass the name of the file you want to assemble as the first parameter,");
-            println!("and the desired name of the output file as the second parameter to the program.");
+            print!("Please pass the name");
+            print!("of the file you want to assemble as the first parameter,");
+            println!("and the desired name of the output file as the");
+            println!("second parameter to the program.");
             return;
         }
     };
@@ -37,8 +39,8 @@ fn main() {
         }
     };
 
-    println!("{:#?}", intermediate.symbol_table);
-    println!("{:#?}", intermediate.parsed);
+    // println!("{:#?}", intermediate.symbol_table);
+    // println!("{:#?}", intermediate.parsed);
 
     let final_result = match passes::second_pass(&intermediate) {
         Ok(result) => result,
@@ -52,5 +54,5 @@ fn main() {
         println!("Error when trying to write to file '{}'", out_file);
     }
 
-    println!("{:#?}", final_result);
+    // println!("{:#?}", final_result);
 }

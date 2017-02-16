@@ -1,7 +1,6 @@
 use is::Command;
-use syntax::{ParsedLine, Directive, Instruction, Operand};
+use syntax::{ParsedLine, Instruction, Operand};
 
-use lazy_static;
 use regex::Regex;
 
 lazy_static! {
@@ -106,6 +105,6 @@ pub fn parse_instruction(line: &str) -> Result<Instruction, ParseErrorKind> {
     })
 }
 
-fn parse_directive(_line: &str) -> Result<Directive, ParseErrorKind> {
+/*fn parse_directive(_line: &str) -> Result<Directive, ParseErrorKind> {
     unimplemented!()
-}
+}*/

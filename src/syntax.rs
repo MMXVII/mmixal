@@ -1,5 +1,6 @@
 use is::Command;
 
+#[allow(dead_code)] // FIXME
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ParsedLine {
     Data(Directive),
