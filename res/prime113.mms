@@ -1,4 +1,4 @@
-        SETL    0, 0, 0      ;
+        SETL    0, 0, 0
         SETL    1, 0, 113
         SETL    2, 0, 2
 LOOP:   CMPU    4, 1, 2
