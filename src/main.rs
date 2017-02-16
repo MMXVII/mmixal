@@ -47,5 +47,11 @@ fn main() {
         }
     };
 
+    // TODO also retrieve this name from cli
+    let out_file = "test.mmo";
+    if io::write_file(out_file, &final_result).is_err() {
+        println!("Error when trying to write to file '{}'", out_file);
+    }
+
     println!("{:#?}", final_result);
 }
