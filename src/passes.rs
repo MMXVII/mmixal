@@ -5,11 +5,17 @@ use parse;
 use parse::{ParseError, ParseErrorKind};
 use is::Command;
 
+
+/// Represents the information gathered by the first assembler pass.
+/// This information is needed in order to perform the second pass.
 pub struct IntermediateResult {
     pub symbol_table: HashMap<String, u64>,
     pub parsed: Vec<(ParsedLine, u64)>,
 }
 
+
+/// The first pass goes through each line, disregards empty or comment lines,
+/// trys to parse all remaining lines to `ParsedLine` and constructs the symbol table.
 pub fn first_pass(lines: &[&str]) -> Result<IntermediateResult, ParseError> {
 
     let mut pc = 0;
@@ -21,24 +27,40 @@ pub fn first_pass(lines: &[&str]) -> Result<IntermediateResult, ParseError> {
 
         let parsed_line_opt = parse::parse(line).map_err(|kind| kind.to_parse_err(line_no as u64))?;
 
+        // If the line was not empty or only a comment, process it
         if let Some(parsed_line) = parsed_line_opt {
+
             match parsed_line.clone() {
+
+                // Deal with regular instructions
                 ParsedLine::RegularInstruction(instr) => {
+
+                    // If the instruction is labeled
                     if let Some(label_str) = instr.label {
+
+                        // Check if the label already exists
                         if symbol_table.contains_key(&label_str) {
                             return Err(ParseError{
                                 kind: ParseErrorKind::LabelDoubleUse,
                                 line: line_no as u64,
                             })
                         }
+
+                        // If not, insert it into symbol table
                         symbol_table.insert(label_str, pc);
                     }
+
+                    // Advance program counter
                     pc += 4;
                 }
+
+                // Deal with assembler directives
                 _ => {
                     unimplemented!();
                 }
             }
+
+            // Save the parsed line for later use
             parsed.push((parsed_line, line_no as u64));
         }
     }
@@ -50,41 +72,62 @@ pub fn first_pass(lines: &[&str]) -> Result<IntermediateResult, ParseError> {
     })
 }
 
+/// The second pass uses the symbol table to translate
+pub fn second_pass(intermediate: &IntermediateResult) -> Result<Vec<u8>, ParseError> {
 
-fn second_pass(intermediate: &IntermediateResult) -> Result<Vec<u8>, ParseError> {
+    let mut binary: Vec<u8> = Vec::new();
 
-    let mut binary = Vec::new();
     for &(ref line, line_no) in intermediate.parsed.iter() {
+
         match line {
+
+            // Translate regular instructions to binary
             &ParsedLine::RegularInstruction(ref instr) => {
-                binary.push(instr.command.opcode());
 
-                for i in 0..3 {
-                    let effective_op: u8 = match instr.operands[i] {
-                        Operand::Value(val) => {
-                            val
-                        }
-                        Operand::Label(ref label_str) => {
-                            let key = &label_str.clone();
+                let result = translate_instruction(instr, &(intermediate.symbol_table));
 
-                            let address = intermediate.symbol_table.get(key);
-
-                            if address.is_none() {
-                                return Err(ParseError {
-                                    kind: ParseErrorKind::UndefinedLabel,
-                                    line: line_no,
-                                });
-                            }
-
-                            // TODO: special treatment for branch / jump commands
-                            *address.unwrap() as u8
-                        }
-                    };
-                    binary.push(effective_op);
-                }
+                binary.extend(&result.map_err(|kind| kind.to_parse_err(line_no))?);
             }
+
+            // Translate assembler directives
             _ => unimplemented!(),
         }
     }
-    unimplemented!()
+
+    Ok(binary)
+}
+
+fn translate_instruction(instr: &Instruction, symbols: &HashMap<String, u64>)
+    -> Result<Vec<u8>, ParseErrorKind>
+{
+
+    let mut binary = Vec::new();
+
+    // Translate command to opcode
+    binary.push(instr.command.opcode());
+
+    // Translate operands
+    for i in 0..3 {
+        let effective_op: u8 = match instr.operands[i] {
+
+            Operand::Value(val) => {
+                val
+            }
+            Operand::Label(ref label_str) => {
+
+                let key = &label_str.clone();
+                let address = symbols.get(key);
+
+                if address.is_none() {
+                    return Err(ParseErrorKind::UndefinedLabel);
+                }
+
+                // TODO: special treatment for branch / jump commands
+                *address.unwrap() as u8
+            }
+        };
+        binary.push(effective_op);
+    }
+
+    Ok(binary)
 }
